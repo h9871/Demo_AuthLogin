@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class MainViewController: BaseViewController {
     
@@ -15,12 +16,13 @@ class MainViewController: BaseViewController {
         label.text = "환영합니다."
         label.textColor = .white
         label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.numberOfLines = 0
         return label
     }()
     
     private lazy var logoutBtn: UIButton = {
         let button = UIButton(primaryAction: UIAction(handler: { [weak self] _ in
-            self?.navigationController?.popToRootViewController(animated: true)
+            self?.logout()
         }))
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("로그아웃", for: .normal)
@@ -31,6 +33,17 @@ class MainViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         initViewSetting()
+    }
+    
+    private func logout() {
+        let firebaseAuth = Auth.auth()
+        
+        do {
+            try firebaseAuth.signOut()
+            self.navigationController?.popToRootViewController(animated: true)
+        } catch let signOutError as NSError {
+            print("ERROR: singout \(signOutError.localizedDescription)")
+        }
     }
 }
 
@@ -43,6 +56,12 @@ extension MainViewController: InitalizeViewProtocol {
         view.addSubview(logoutBtn)
         
         updateLayout()
+        
+        let email = Auth.auth().currentUser?.email ?? "고객"
+        welcomeText.text = """
+        환영합니다!
+        \(email)님
+        """
     }
     
     func updateLayout() {
